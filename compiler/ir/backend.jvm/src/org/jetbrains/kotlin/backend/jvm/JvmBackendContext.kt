@@ -29,6 +29,7 @@ import org.jetbrains.kotlin.ir.symbols.IrFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.IrLocalDelegatedPropertySymbol
 import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
 import org.jetbrains.kotlin.ir.types.IrType
+import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.util.ReferenceSymbolTable
 import org.jetbrains.kotlin.ir.util.SymbolTable
 import org.jetbrains.kotlin.name.FqName
@@ -44,6 +45,10 @@ class JvmBackendContext(
     val phaseConfig: PhaseConfig,
     private val firMode: Boolean
 ) : CommonBackendContext {
+    override val transformedFunction: MutableMap<IrFunctionSymbol, IrSimpleFunctionSymbol>
+        get() = TODO("not implemented")
+    override val scriptMode: Boolean = false
+
     override val builtIns = state.module.builtIns
     val typeMapper = IrTypeMapper(this)
     val methodSignatureMapper = MethodSignatureMapper(this)
