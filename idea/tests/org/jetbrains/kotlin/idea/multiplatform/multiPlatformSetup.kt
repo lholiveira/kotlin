@@ -19,6 +19,8 @@ import org.jetbrains.kotlin.idea.framework.CommonLibraryKind
 import org.jetbrains.kotlin.idea.framework.JSLibraryKind
 import org.jetbrains.kotlin.idea.stubs.AbstractMultiModuleTest
 import org.jetbrains.kotlin.idea.stubs.createFacet
+import org.jetbrains.kotlin.idea.stubs.createMultiplatformFacetM2
+import org.jetbrains.kotlin.idea.stubs.createMultiplatformFacetM3
 import org.jetbrains.kotlin.idea.test.ConfigLibraryUtil
 import org.jetbrains.kotlin.idea.test.PluginTestCaseBase
 import org.jetbrains.kotlin.test.TestJdkKind
@@ -90,9 +92,9 @@ fun AbstractMultiModuleTest.doSetup(projectModel: ProjectResolveModel) {
 
     for ((resolveModule, ideaModule) in resolveModulesToIdeaModules.entries) {
         val platform = resolveModule.platform
-        ideaModule.createFacet(
+        ideaModule.createMultiplatformFacetM3(
             platform,
-            implementedModuleNames = resolveModule.dependencies.filter { it.kind == ResolveDependency.Kind.DEPENDS_ON }.map { it.to.name }
+            dependsOnModuleNames = resolveModule.dependencies.filter { it.kind == ResolveDependency.Kind.DEPENDS_ON }.map { it.to.name }
         )
         // New inference is enabled here as these tests are using type refinement feature that is working only along with NI
         ideaModule.enableMultiPlatform(additionalCompilerArguments = "-Xnew-inference")
@@ -142,7 +144,7 @@ private fun AbstractMultiModuleTest.doSetupProject(rootInfos: List<RootInfo>) {
             else -> {
                 val commonModuleId = ModuleId(name, CommonPlatforms.defaultCommonPlatform)
 
-                module.createFacet(platform, implementedModuleNames = listOf(commonModuleId.ideaModuleName()))
+                module.createMultiplatformFacetM2(platform, implementedModuleNames = listOf(commonModuleId.ideaModuleName()))
                 module.enableMultiPlatform()
 
                 modulesById[commonModuleId]?.let { commonModule ->
