@@ -157,36 +157,46 @@ object NewCommonSuperTypeCalculator {
 
         val explicitSupertypes = filterSupertypes(uniqueTypes, contextStubTypesNotEqual)
         if (explicitSupertypes.size == 1) return explicitSupertypes.single()
-        findErrorTypeInSupertypesIfItIsNeeded(explicitSupertypes)?.let { return it }
+        findErrorTypeInSupertypesIfItIsNeeded(explicitSupertypes, contextStubTypesEqualToAnything)?.let { return it }
 
         findCommonIntegerLiteralTypesSuperType(explicitSupertypes)?.let { return it }
 
-        return findSuperTypeConstructorsAndIntersectResult(explicitSupertypes, depth)
+        return findSuperTypeConstructorsAndIntersectResult(explicitSupertypes, depth, contextStubTypesEqualToAnything)
     }
 
-    private fun TypeSystemCommonSuperTypesContext.findErrorTypeInSupertypesIfItIsNeeded(types: List<SimpleTypeMarker>): SimpleTypeMarker? {
+    private fun TypeSystemCommonSuperTypesContext.findErrorTypeInSupertypesIfItIsNeeded(
+        types: List<SimpleTypeMarker>,
+        contextStubTypesEqualToAnything: AbstractTypeCheckerContext
+    ): SimpleTypeMarker? {
         if (isErrorTypeAllowed) return null
         for (type in types) {
-            collectAllSupertypes(type).firstOrNull { it.isError() }?.let { return it.toErrorType() }
+            collectAllSupertypes(type, contextStubTypesEqualToAnything).firstOrNull { it.isError() }?.let { return it.toErrorType() }
         }
         return null
     }
 
     private fun TypeSystemCommonSuperTypesContext.findSuperTypeConstructorsAndIntersectResult(
         types: List<SimpleTypeMarker>,
-        depth: Int
+        depth: Int,
+        contextStubTypesEqualToAnything: AbstractTypeCheckerContext
     ): SimpleTypeMarker =
-        intersectTypes(allCommonSuperTypeConstructors(types).map { superTypeWithGivenConstructor(types, it, depth) })
+        intersectTypes(
+            allCommonSuperTypeConstructors(types, contextStubTypesEqualToAnything)
+                .map { superTypeWithGivenConstructor(types, it, depth) }
+        )
 
     /**
      * Note that if there is captured type C, then no one else is not subtype of C => lowerType cannot help here
      */
-    private fun TypeSystemCommonSuperTypesContext.allCommonSuperTypeConstructors(types: List<SimpleTypeMarker>): List<TypeConstructorMarker> {
-        val result = collectAllSupertypes(types.first())
+    private fun TypeSystemCommonSuperTypesContext.allCommonSuperTypeConstructors(
+        types: List<SimpleTypeMarker>,
+        contextStubTypesEqualToAnything: AbstractTypeCheckerContext
+    ): List<TypeConstructorMarker> {
+        val result = collectAllSupertypes(types.first(), contextStubTypesEqualToAnything)
         for (type in types) {
             if (type === types.first()) continue
 
-            result.retainAll(collectAllSupertypes(type))
+            result.retainAll(collectAllSupertypes(type, contextStubTypesEqualToAnything))
         }
         // todo: drop?
         return result.filterNot { target ->
@@ -196,9 +206,16 @@ object NewCommonSuperTypeCalculator {
         }
     }
 
-    private fun TypeSystemCommonSuperTypesContext.collectAllSupertypes(type: SimpleTypeMarker) =
+    private fun TypeSystemCommonSuperTypesContext.collectAllSupertypes(
+        type: SimpleTypeMarker,
+        contextStubTypesEqualToAnything: AbstractTypeCheckerContext
+    ) =
         LinkedHashSet<TypeConstructorMarker>().apply {
-            type.anySuperTypeConstructor { add(it); false }
+            contextStubTypesEqualToAnything.anySupertype(
+                type,
+                { add(it.typeConstructor()); false },
+                { AbstractTypeCheckerContext.SupertypesPolicy.LowerIfFlexible }
+            )
         }
 
     private fun TypeSystemCommonSuperTypesContext.superTypeWithGivenConstructor(
