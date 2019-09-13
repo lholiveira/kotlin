@@ -131,7 +131,7 @@ class ResultTypeResolver(
             val type = constraint.type
             lowerConstraintTypes.add(type)
 
-            if (atLeastOneProper || isProperType(type)) {
+            if (isProperType(type)) {
                 atLeastOneProper = true
             } else {
                 atLeastOneNonProper = true
