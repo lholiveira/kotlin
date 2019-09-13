@@ -72,7 +72,7 @@ object NewCommonSuperTypeCalculator {
         contextStubTypesNotEqual: AbstractTypeCheckerContext
     ): SimpleTypeMarker {
         // i.e. result type also should be marked nullable
-        val notAllNotNull = types.any { !AbstractNullabilityChecker.isSubtypeOfAny(this, it) }
+        val notAllNotNull = types.any { !AbstractNullabilityChecker.isSubtypeOfAny(contextStubTypesEqualToAnything, it) }
         val notNullTypes = if (notAllNotNull) types.map { it.withNullability(false) } else types
 
         val commonSuperType = commonSuperTypeForNotNullTypes(notNullTypes, depth, contextStubTypesEqualToAnything, contextStubTypesNotEqual)
