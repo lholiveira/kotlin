@@ -10131,6 +10131,11 @@ public class DiagnosticsUsingJavacTestGenerated extends AbstractDiagnosticsUsing
                     runTest("compiler/testData/diagnostics/tests/inference/commonSystem/nestedLambdas.kt");
                 }
 
+                @TestMetadata("nonFixedVariableInsideFlexibleType.kt")
+                public void testNonFixedVariableInsideFlexibleType() throws Exception {
+                    runTest("compiler/testData/diagnostics/tests/inference/commonSystem/nonFixedVariableInsideFlexibleType.kt");
+                }
+
                 @TestMetadata("postponedCompletionWithExactAnnotation.kt")
                 public void testPostponedCompletionWithExactAnnotation() throws Exception {
                     runTest("compiler/testData/diagnostics/tests/inference/commonSystem/postponedCompletionWithExactAnnotation.kt");

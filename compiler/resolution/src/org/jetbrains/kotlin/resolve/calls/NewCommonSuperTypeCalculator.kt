@@ -255,7 +255,7 @@ object NewCommonSuperTypeCalculator {
                             null
                         }
 
-                        typeArgument.getType().asSimpleType()?.isStubType() == true -> null
+                        typeArgument.getType().lowerBoundIfFlexible().isStubType() -> null
 
                         else -> typeArgument
                     }
