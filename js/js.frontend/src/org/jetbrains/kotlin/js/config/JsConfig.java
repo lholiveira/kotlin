@@ -110,13 +110,10 @@ public class JsConfig {
 
     private final Map<ModuleDescriptor, String> requireKeyMap = new HashMap<>();
 
-    @NotNull
+    @Nullable
     public String getRequireKey(@NotNull ModuleDescriptor module) {
-        String result = requireKeyMap.get(module);
-        if (result == null) {
-            throw new IllegalStateException("Unknown module " + module.getName().asString());
-        }
-        return result;
+        init();
+        return requireKeyMap.get(module);
     }
 
     @NotNull
