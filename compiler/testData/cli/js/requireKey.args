@@ -1,0 +1,17 @@
+$TESTDATA_DIR$/separateModules/sepModule1.kt
+-meta-info
+-require-key
+custom/key
+-module-kind
+commonjs
+-output
+$TEMP_DIR$/m1/m1.js
+---
+$TESTDATA_DIR$/separateModules/sepModule2.kt
+-meta-info
+-libraries
+$TEMP_DIR$/m1
+-module-kind
+commonjs
+-output
+$TEMP_DIR$/m2/m2.js

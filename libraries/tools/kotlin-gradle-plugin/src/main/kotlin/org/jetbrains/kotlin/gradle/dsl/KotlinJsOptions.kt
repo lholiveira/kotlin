@@ -43,6 +43,12 @@ interface KotlinJsOptions  : org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions
      var outputFile: kotlin.String?
 
     /**
+     * NPM require key
+     * Default value: null
+     */
+     var requireKey: kotlin.String?
+
+    /**
      * Generate source map
      * Default value: false
      */

@@ -809,6 +809,11 @@ public class CliTestGenerated extends AbstractCliTest {
             runTest("compiler/testData/cli/js/outputPrefixFileNotFound.args");
         }
 
+        @TestMetadata("requireKey.args")
+        public void testRequireKey() throws Exception {
+            runTest("compiler/testData/cli/js/requireKey.args");
+        }
+
         @TestMetadata("simple2js.args")
         public void testSimple2js() throws Exception {
             runTest("compiler/testData/cli/js/simple2js.args");

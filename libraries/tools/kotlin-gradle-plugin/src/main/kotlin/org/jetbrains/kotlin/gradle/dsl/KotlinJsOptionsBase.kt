@@ -81,6 +81,13 @@ internal abstract class KotlinJsOptionsBase : org.jetbrains.kotlin.gradle.dsl.Ko
             outputFileField = value
         }
 
+    private var requireKeyField: kotlin.String?? = null
+    override var requireKey: kotlin.String?
+        get() = requireKeyField ?: null
+        set(value) {
+            requireKeyField = value
+        }
+
     private var sourceMapField: kotlin.Boolean? = null
     override var sourceMap: kotlin.Boolean
         get() = sourceMapField ?: false
@@ -128,6 +135,7 @@ internal abstract class KotlinJsOptionsBase : org.jetbrains.kotlin.gradle.dsl.Ko
         moduleKindField?.let { args.moduleKind = it }
         noStdlibField?.let { args.noStdlib = it }
         outputFileField?.let { args.outputFile = it }
+        requireKeyField?.let { args.requireKey = it }
         sourceMapField?.let { args.sourceMap = it }
         sourceMapEmbedSourcesField?.let { args.sourceMapEmbedSources = it }
         sourceMapPrefixField?.let { args.sourceMapPrefix = it }
@@ -148,6 +156,7 @@ internal fun org.jetbrains.kotlin.cli.common.arguments.K2JSCompilerArguments.fil
     moduleKind = "plain"
     noStdlib = true
     outputFile = null
+    requireKey = null
     sourceMap = false
     sourceMapEmbedSources = null
     sourceMapPrefix = null

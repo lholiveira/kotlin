@@ -136,6 +136,6 @@ class K2JSCompilerArguments : CommonCompilerArguments() {
     var friendModules: String? by NullableStringFreezableVar(null)
 
     @GradleOption(DefaultValues.StringNullDefault::class)
-    @Argument(value = "-Xrequire-key", description = "NPM require key")
+    @Argument(value = "-require-key", description = "NPM require key")
     var requireKey: String? by NullableStringFreezableVar(null)
 }
