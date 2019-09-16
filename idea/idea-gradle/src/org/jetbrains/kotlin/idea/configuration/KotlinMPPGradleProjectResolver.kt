@@ -401,29 +401,22 @@ open class KotlinMPPGradleProjectResolver : AbstractProjectResolverExtension() {
             resolverCtx: ProjectResolverContext
         ): Map<KotlinSourceSet, Collection<ExternalSystemTestTask>> {
             val sourceSetToTestTasks: MutableMap<KotlinSourceSet, MutableCollection<ExternalSystemTestTask>> = HashMap()
-            val dependsOnReverceGraph: MutableMap<String, MutableSet<KotlinSourceSet>> = HashMap()
+            val dependsOnReverseGraph: MutableMap<String, MutableSet<KotlinSourceSet>> = HashMap()
             mppModel.targets.forEach { target ->
                 target.compilations.forEach { compilation ->
                     val testTasks = target.testTasks.filter { testTask -> testTask.compilationName == compilation.name }
                         .map { ExternalSystemTestTask(it.taskName, getKotlinModuleId(gradleModule, compilation, resolverCtx), target.name) }
                     compilation.sourceSets.forEach { sourceSet ->
-                        sourceSetToTestTasks[sourceSet] = LinkedHashSet(testTasks)
+                        sourceSetToTestTasks.getOrPut(sourceSet) { LinkedHashSet() } += testTasks
                         sourceSet.dependsOnSourceSets.forEach { dependentModule ->
-                            (dependsOnReverceGraph[dependentModule]
-                                ?: LinkedHashSet<KotlinSourceSet>().also { dependsOnReverceGraph[dependentModule] = it })
-                                .add(sourceSet)
+                            dependsOnReverseGraph.getOrPut(dependentModule) { LinkedHashSet() } += sourceSet
                         }
                     }
                 }
             }
-            mppModel.sourceSets.forEach { sourceSetName, sourceSet ->
-                (dependsOnReverceGraph[sourceSetName] ?: (LinkedHashSet<KotlinSourceSet>() as MutableSet<KotlinSourceSet>).also {
-                    dependsOnReverceGraph[sourceSetName] = it
-                }).forEach { dependingSourceSet ->
-                    (sourceSetToTestTasks[sourceSet]
-                        ?: (LinkedHashSet<KotlinSourceSet>() as MutableCollection<ExternalSystemTestTask>).also {
-                            sourceSetToTestTasks[sourceSet] = it
-                        }).addAll(sourceSetToTestTasks[dependingSourceSet] ?: emptyList())
+            mppModel.sourceSets.forEach { (sourceSetName, sourceSet) ->
+                dependsOnReverseGraph[sourceSetName]?.forEach { dependingSourceSet ->
+                    sourceSetToTestTasks.getOrPut(sourceSet) { LinkedHashSet() } += sourceSetToTestTasks[dependingSourceSet] ?: emptyList()
                 }
             }
             return sourceSetToTestTasks
