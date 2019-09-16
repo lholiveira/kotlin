@@ -27,6 +27,9 @@ import java.io.File
 import java.lang.reflect.Method
 
 class KotlinMPPGradleModelBuilder : ModelBuilderService {
+    // This flag enables import of source sets which do not belong to any compilation
+    val IMPORT_ORPHAN_SOURCE_SETS = false
+
     override fun getErrorMessageBuilder(project: Project, e: Exception): ErrorMessageBuilder {
         return ErrorMessageBuilder
             .create(project, e, "Gradle import errors")
@@ -62,8 +65,17 @@ class KotlinMPPGradleModelBuilder : ModelBuilderService {
         )
     }
 
+    private fun filterOrphanSourceSets(sourceSets: Map<String, KotlinSourceSetImpl>, targets: Collection<KotlinTarget>): Map<String, KotlinSourceSetImpl> {
+        if (IMPORT_ORPHAN_SOURCE_SETS) return sourceSets
+        val compiledSourceSets: Collection<String> = targets.flatMap { it.compilations }.flatMap { it.sourceSets }.flatMap { it.dependsOnSourceSets.union(listOf(it.name)) }.distinct()
+        sourceSets.filter { !compiledSourceSets.contains(it.key) }.forEach {
+            logger.warn("[sync warning] Source set \"${it.key}\" is not compiled with any compilation. This source set is not imported in the IDE.")
+        }
+        return sourceSets.filter { compiledSourceSets.contains(it.key) }
+    }
+
     private fun isHMPPEnabled(project: Project): Boolean {
-        //TODO(auskov): replace with Project.isKotlinGranularMetadataEnabled after merging with gradle pranch
+        //TODO(auskov): replace with Project.isKotlinGranularMetadataEnabled after merging with gradle branch
         return (project.findProperty("kotlin.mpp.enableGranularSourceSetsMetadata") as? String)?.toBoolean() ?: false
     }
 
@@ -566,16 +578,6 @@ class KotlinMPPGradleModelBuilder : ModelBuilderService {
         }
 
         for (sourceSet in sourceSets.values) {
-            val name = sourceSet.name
-            if (name == KotlinSourceSet.COMMON_MAIN_SOURCE_SET_NAME) {
-                sourceSet.isTestModule = false
-                continue
-            }
-            if (name == KotlinSourceSet.COMMON_TEST_SOURCE_SET_NAME) {
-                sourceSet.isTestModule = true
-                continue
-            }
-
             val compilations = sourceSetToCompilations[sourceSet]
             if (compilations != null) {
                 val platforms = compilations.map { it.platform }
@@ -589,8 +591,16 @@ class KotlinMPPGradleModelBuilder : ModelBuilderService {
 
                 sourceSet.isTestModule = compilations.all { it.isTestModule }
             } else {
-                // TODO: change me after design about it
-                sourceSet.isTestModule = "Test" in sourceSet.name
+                //TODO(auskov): remove this branch as far as import of orphan source sets is dropped
+                val name = sourceSet.name
+                if (name == KotlinSourceSet.COMMON_MAIN_SOURCE_SET_NAME) {
+                    sourceSet.isTestModule = false
+                    continue
+                }
+                if (name == KotlinSourceSet.COMMON_TEST_SOURCE_SET_NAME) {
+                    sourceSet.isTestModule = true
+                    continue
+                }
             }
         }
     }
