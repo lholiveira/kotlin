@@ -62,7 +62,7 @@ object KotlinJavascriptMetadataUtils {
     private val KOTLIN_JAVASCRIPT_METHOD_NAME_PATTERN = "\\.kotlin_module_metadata\\(".toPattern()
 
     /**
-     * Matches string like <name>.kotlin_module_metadata(<abi version>, <module name>, <base64 data>)
+     * Matches string like <name>.kotlin_module_metadata(<abi version>, <module name>, <base64 data>)[.requireKey(<commonJs module name>)]
      */
     private val METADATA_PATTERN = "(?m)\\w+\\.$KOTLIN_JAVASCRIPT_METHOD_NAME\\((\\d+),\\s*(['\"])([^'\"]*)\\2,\\s*(['\"])([^'\"]*)\\4\\)(\\.requireKey\\((['\"])([^'\"]*)\\7\\))?".toPattern()
 
@@ -74,7 +74,8 @@ object KotlinJavascriptMetadataUtils {
 
     fun formatMetadataAsString(moduleName: String, requireKey: String, content: ByteArray, metadataVersion: JsMetadataVersion): String =
         "// Kotlin.$KOTLIN_JAVASCRIPT_METHOD_NAME(${metadataVersion.toInteger()}, \"$moduleName\", " +
-        "\"${Base64.getEncoder().encodeToString(content)}\").requireKey(\"$requireKey\");\n"
+        "\"${Base64.getEncoder().encodeToString(content)}\")" +
+        "${if (requireKey != moduleName) ".requireKey(\"$requireKey\")" else ""};\n"
 
     @JvmStatic
     fun loadMetadata(file: File): List<KotlinJavascriptMetadata> {
