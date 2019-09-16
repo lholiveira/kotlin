@@ -46,9 +46,9 @@ import org.jetbrains.kotlin.resolve.scopes.HierarchicalScope
 import org.jetbrains.kotlin.resolve.scopes.utils.*
 
 class KotlinImportOptimizer : ImportOptimizer {
-    override fun supports(file: PsiFile?) = file is KtFile
+    override fun supports(file: PsiFile) = file is KtFile
 
-    override fun processFile(file: PsiFile?): ImportOptimizer.CollectingInfoRunnable {
+    override fun processFile(file: PsiFile): ImportOptimizer.CollectingInfoRunnable {
         val ktFile = (file as? KtFile) ?: return DO_NOTHING
         val (add, remove, imports) = prepareImports(ktFile) ?: return DO_NOTHING
 
@@ -255,4 +255,5 @@ class KotlinImportOptimizer : ImportOptimizer {
             override fun getUserNotificationInfo() = "Unused imports not found"
         }
     }
+
 }

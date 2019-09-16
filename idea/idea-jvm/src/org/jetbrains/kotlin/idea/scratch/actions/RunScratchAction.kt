@@ -22,6 +22,7 @@ import com.intellij.openapi.keymap.KeymapManager
 import com.intellij.openapi.keymap.KeymapUtil
 import com.intellij.openapi.project.DumbService
 import com.intellij.task.ProjectTaskManager
+import com.intellij.task.ProjectTaskResult
 import org.jetbrains.kotlin.idea.KotlinBundle
 import org.jetbrains.kotlin.idea.scratch.*
 import org.jetbrains.kotlin.idea.scratch.printDebugMessage
@@ -72,19 +73,21 @@ class RunScratchAction : ScratchAction(
 
             if (!isAutoRun && module != null && isMakeBeforeRun) {
                 val project = scratchFile.project
-                ProjectTaskManager.getInstance(project).build(arrayOf(module)) { result ->
-                    if (result.isAborted || result.errors > 0) {
-                        executor.errorOccurs("There were compilation errors in module ${module.name}")
-                    }
+                ProjectTaskManager.getInstance(project).build(arrayOf(module), object : com.intellij.task.ProjectTaskNotification {
+                    override fun finished(result: ProjectTaskResult) {
+                        if (result.isAborted || result.errors > 0) {
+                            executor.errorOccurs("There were compilation errors in module ${module.name}")
+                        }
 
-                    if (DumbService.isDumb(project)) {
-                        DumbService.getInstance(project).smartInvokeLater {
+                        if (DumbService.isDumb(project)) {
+                            DumbService.getInstance(project).smartInvokeLater {
+                                executeScratch()
+                            }
+                        } else {
                             executeScratch()
                         }
-                    } else {
-                        executeScratch()
                     }
-                }
+                })
             } else {
                 executeScratch()
             }

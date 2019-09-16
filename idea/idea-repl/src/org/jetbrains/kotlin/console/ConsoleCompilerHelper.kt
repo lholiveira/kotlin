@@ -23,6 +23,8 @@ import com.intellij.openapi.compiler.CompilerManager
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.task.ProjectTaskManager
+import com.intellij.task.ProjectTaskNotification
+import com.intellij.task.ProjectTaskResult
 
 class ConsoleCompilerHelper(
     private val project: Project,
@@ -39,11 +41,14 @@ class ConsoleCompilerHelper(
 
     fun compileModule() {
         if (ExecutionManager.getInstance(project).contentManager.removeRunContent(executor, contentDescriptor)) {
-            ProjectTaskManager.getInstance(project).build(arrayOf(module)) { result ->
-                if (!module.isDisposed) {
-                    KotlinConsoleKeeper.getInstance(project).run(module, previousCompilationFailed = result.errors > 0)
+            ProjectTaskManager.getInstance(project).build(arrayOf(module), object : ProjectTaskNotification {
+                override fun finished(result: ProjectTaskResult) {
+                    if (!module.isDisposed) {
+                        KotlinConsoleKeeper.getInstance(project).run(module, previousCompilationFailed = result.errors > 0)
+                    }
                 }
-            }
+            })
         }
     }
 }
+

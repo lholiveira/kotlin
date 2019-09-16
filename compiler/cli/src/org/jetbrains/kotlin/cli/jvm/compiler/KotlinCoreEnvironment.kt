@@ -27,14 +27,17 @@ import com.intellij.core.JavaCoreProjectEnvironment
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.lang.MetaLanguage
 import com.intellij.lang.java.JavaParserDefinition
+import com.intellij.mock.MockComponentManager
 import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.TransactionGuard
 import com.intellij.openapi.application.TransactionGuardImpl
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.extensions.AreaInstance
 import com.intellij.openapi.extensions.Extensions
 import com.intellij.openapi.extensions.ExtensionsArea
+import com.intellij.openapi.extensions.impl.ExtensionsAreaImpl
 import com.intellij.openapi.fileTypes.FileTypeExtensionPoint
 import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.project.Project
@@ -62,11 +65,11 @@ import com.intellij.psi.stubs.BinaryFileStubBuilders
 import com.intellij.psi.util.JavaClassSupers
 import com.intellij.util.io.URLUtil
 import com.intellij.util.lang.UrlClassLoader
+import com.intellij.util.pico.DefaultPicoContainer
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.kotlin.asJava.KotlinAsJavaSupport
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport
 import org.jetbrains.kotlin.asJava.classes.FacadeCache
-import org.jetbrains.kotlin.asJava.classes.KtLightClassForFacade
 import org.jetbrains.kotlin.asJava.finder.JavaElementFinder
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
@@ -473,6 +476,7 @@ class KotlinCoreEnvironment private constructor(
             synchronized(APPLICATION_LOCK) {
                 if (ourApplicationEnvironment == null) {
                     val disposable = Disposer.newDisposable()
+
                     ourApplicationEnvironment = createApplicationEnvironment(disposable, configuration, unitTestMode = false)
                     ourProjectCount = 0
                     Disposer.register(disposable, Disposable {
@@ -511,8 +515,8 @@ class KotlinCoreEnvironment private constructor(
         private fun createApplicationEnvironment(
             parentDisposable: Disposable, configuration: CompilerConfiguration, unitTestMode: Boolean
         ): JavaCoreApplicationEnvironment {
-            Extensions.cleanRootArea(parentDisposable)
-            registerAppExtensionPoints()
+            val compManager = MockComponentManager(null, parentDisposable)
+            registerAppExtensionPoints(compManager.extensionArea)
             val applicationEnvironment = object : JavaCoreApplicationEnvironment(parentDisposable, unitTestMode) {
                 override fun createJrtFileSystem(): VirtualFileSystem? = CoreJrtFileSystem()
             }
@@ -525,9 +529,7 @@ class KotlinCoreEnvironment private constructor(
             return applicationEnvironment
         }
 
-        private fun registerAppExtensionPoints() {
-            val area = Extensions.getRootArea()
-
+        private fun registerAppExtensionPoints(area: ExtensionsArea) {
             CoreApplicationEnvironment.registerExtensionPoint(area, BinaryFileStubBuilders.EP_NAME, FileTypeExtensionPoint::class.java)
             CoreApplicationEnvironment.registerExtensionPoint(area, FileContextProvider.EP_NAME, FileContextProvider::class.java)
 

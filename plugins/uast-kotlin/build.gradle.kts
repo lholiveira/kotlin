@@ -24,6 +24,7 @@ dependencies {
         compileOnly(intellijDep()) { includeJars("platform-impl") }
         compileOnly(intellijPluginDep("java")) { includeJars("java-api", "java-impl") }
         testCompileOnly(intellijDep()) { includeJars("platform-impl") }
+        compile(intellijDep()) { includeJars("platform-util-ex") }
         testCompileOnly(intellijPluginDep("java")) { includeJars("java-api", "java-impl") }
         testRuntime(intellijPluginDep("java"))
     }

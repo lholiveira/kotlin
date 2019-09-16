@@ -60,7 +60,7 @@ private fun applicableMigrationToolsImpl(migrationInfo: MigrationInfo?): List<In
     val rootProfile = InspectionProfileManager.getInstance().currentProfile
 
     return rootProfile.allTools.asSequence()
-        .map { it.tool }
+        .mapNotNull { it.tool as? InspectionToolWrapper<InspectionProfileEntry, InspectionEP> }
         .filter { toolWrapper: InspectionToolWrapper<*, *> ->
             val tool = toolWrapper.tool
             tool is MigrationFix && (migrationInfo == null || tool.isApplicable(migrationInfo))
