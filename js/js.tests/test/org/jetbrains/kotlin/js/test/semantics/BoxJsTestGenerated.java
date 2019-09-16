@@ -5472,6 +5472,11 @@ public class BoxJsTestGenerated extends AbstractBoxJsTest {
                 runTest("js/js.translator/testData/box/multiModuleWrappers/common_js/moduleWithNonIdentifierName.kt");
             }
 
+            @TestMetadata("requireKey.kt")
+            public void testRequireKey() throws Exception {
+                runTest("js/js.translator/testData/box/multiModuleWrappers/common_js/requireKey.kt");
+            }
+
             @TestMetadata("simple.kt")
             public void testSimple() throws Exception {
                 runTest("js/js.translator/testData/box/multiModuleWrappers/common_js/simple.kt");

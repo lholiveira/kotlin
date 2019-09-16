@@ -506,7 +506,7 @@ abstract class BasicBoxTest(
 
         if (config.moduleKind != ModuleKind.PLAIN) {
             val content = FileUtil.loadFile(outputFile, true)
-            val wrappedContent = wrapWithModuleEmulationMarkers(content, moduleId = config.moduleId, moduleKind = config.moduleKind)
+            val wrappedContent = wrapWithModuleEmulationMarkers(content, moduleId = config.requireKey, moduleKind = config.moduleKind)
             FileUtil.writeToFile(outputFile, wrappedContent)
         }
 
@@ -645,6 +645,9 @@ abstract class BasicBoxTest(
 
         configuration.put(CommonConfigurationKeys.MODULE_NAME, module.name.removeSuffix(OLD_MODULE_SUFFIX))
         configuration.put(JSConfigurationKeys.MODULE_KIND, module.moduleKind)
+        module.requireKey?.let { requireKey ->
+            configuration.put(JSConfigurationKeys.REQUIRE_KEY, requireKey)
+        }
         configuration.put(JSConfigurationKeys.TARGET, EcmaVersion.v5)
 
         val hasFilesToRecompile = module.hasFilesToRecompile
@@ -684,7 +687,7 @@ abstract class BasicBoxTest(
 
         val filesToMinify = generatedJsFiles.associate { (fileName, module) ->
             val inputFileName = File(fileName).nameWithoutExtension
-            fileName to InputFile(InputResource.file(fileName), null, File(workDir, inputFileName + ".min.js").absolutePath, module.name)
+            fileName to InputFile(InputResource.file(fileName), null, File(workDir, inputFileName + ".min.js").absolutePath, module.requireKey ?: module.name)
         }
 
         val testFunctionFqn = testModuleName + (if (testPackage.isNullOrEmpty()) "" else ".$testPackage") + ".$testFunction"
@@ -735,6 +738,11 @@ abstract class BasicBoxTest(
             val moduleKindMatcher = MODULE_KIND_PATTERN.matcher(text)
             if (moduleKindMatcher.find()) {
                 currentModule.moduleKind = ModuleKind.valueOf(moduleKindMatcher.group(1))
+            }
+
+            val requireKeyMatcher = REQUIRE_KEY_PATTERN.matcher(text)
+            if (requireKeyMatcher.find()) {
+                currentModule.requireKey = requireKeyMatcher.group(1)
             }
 
             if (NO_INLINE_PATTERN.matcher(text).find()) {
@@ -812,6 +820,7 @@ abstract class BasicBoxTest(
         val dependencies = dependencies.toMutableList()
         val friends = friends.toMutableList()
         var moduleKind = ModuleKind.PLAIN
+        var requireKey: String? = null
         var inliningDisabled = false
         val files = mutableListOf<TestFile>()
         var languageVersionSettings: LanguageVersionSettings? = null
@@ -842,6 +851,7 @@ abstract class BasicBoxTest(
 
         private val MODULE_KIND_PATTERN = Pattern.compile("^// *MODULE_KIND: *(.+)$", Pattern.MULTILINE)
         private val NO_MODULE_SYSTEM_PATTERN = Pattern.compile("^// *NO_JS_MODULE_SYSTEM", Pattern.MULTILINE)
+        private val REQUIRE_KEY_PATTERN = Pattern.compile("^// *REQUIRE_KEY: *(.+)$", Pattern.MULTILINE)
 
         // Infer main module using dependency graph
         private val INFER_MAIN_MODULE = Pattern.compile("^// *INFER_MAIN_MODULE", Pattern.MULTILINE)
