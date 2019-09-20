@@ -12,6 +12,7 @@ import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.FqNameUnsafe
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.resolve.descriptorUtil.annotationClass
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.TypeConstructor
 import org.jetbrains.kotlin.types.TypeProjection
@@ -164,6 +165,15 @@ abstract class DescriptorRenderer {
             modifiers = DescriptorRendererModifier.ALL
         }
 
+        @JvmField
+        val ANNOTATIONS_WHITELIST: DescriptorRenderer = withOptions {
+            modifiers = DescriptorRendererModifier.ALL
+            annotationFilter = { annotationDescriptor ->
+                AnnotationsInDiagnosticMessages.whitelist.contains(annotationDescriptor.fqName)
+            }
+            annotationArgumentsRenderingPolicy = AnnotationArgumentsRenderingPolicy.UNLESS_EMPTY
+        }
+
         fun getClassifierKindPrefix(classifier: ClassifierDescriptorWithTypeParameters): String = when (classifier) {
             is TypeAliasDescriptor ->
                 "typealias"
@@ -252,6 +262,13 @@ object ExcludedTypeAnnotations {
     val internalAnnotationsForResolve = setOf(
         FqName("kotlin.internal.NoInfer"),
         FqName("kotlin.internal.Exact")
+    )
+}
+
+object AnnotationsInDiagnosticMessages {
+    val whitelist = setOf(
+        FqName("kotlin.SinceKotlin"),
+        FqName("kotlin.internal.NoInfer")
     )
 }
 

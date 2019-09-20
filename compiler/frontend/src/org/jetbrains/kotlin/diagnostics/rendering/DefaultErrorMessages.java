@@ -84,7 +84,8 @@ public class DefaultErrorMessages {
         MAP.put(EXTENSION_FUNCTION_SHADOWED_BY_MEMBER_PROPERTY_WITH_INVOKE,
                 "Extension function is shadowed by a member property ''{0}'' with {1}", NAME, COMPACT_WITH_MODIFIERS);
 
-        MAP.put(INACCESSIBLE_TYPE, "Type {0} is inaccessible in this context due to: {1}", RENDER_TYPE, commaSeparated(FQ_NAMES_IN_TYPES));
+        MAP.put(INACCESSIBLE_TYPE, "Type {0} is inaccessible in this context due to: {1}", RENDER_TYPE, commaSeparated(
+                ANNOTATIONS_WHITELIST));
 
         MAP.put(REDECLARATION, "Conflicting declarations: {0}", commaSeparated(COMPACT_WITH_MODIFIERS));
         MAP.put(PACKAGE_OR_CLASSIFIER_REDECLARATION, "Redeclaration: {0}", STRING);
@@ -106,11 +107,11 @@ public class DefaultErrorMessages {
                             RENDER_TYPE.render(object.getExpectedType(), context),
                             RENDER_TYPE.render(object.getExpressionType(), context),
                             RENDER_TYPE.render(object.getReceiverType(), context),
-                            FQ_NAMES_IN_TYPES.render(object.getCallableDescriptor(), context)
+                            ANNOTATIONS_WHITELIST.render(object.getCallableDescriptor(), context)
                     };
                 });
 
-        MAP.put(MEMBER_PROJECTED_OUT, "Out-projected type ''{1}'' prohibits the use of ''{0}''", FQ_NAMES_IN_TYPES, RENDER_TYPE);
+        MAP.put(MEMBER_PROJECTED_OUT, "Out-projected type ''{1}'' prohibits the use of ''{0}''", ANNOTATIONS_WHITELIST, RENDER_TYPE);
         MAP.put(INCOMPATIBLE_MODIFIERS, "Modifier ''{0}'' is incompatible with ''{1}''", TO_STRING, TO_STRING);
         MAP.put(DEPRECATED_MODIFIER_PAIR, "Modifier ''{0}'' is deprecated in presence of ''{1}''", TO_STRING, TO_STRING);
         MAP.put(REPEATED_MODIFIER, "Repeated ''{0}''", TO_STRING);
@@ -308,8 +309,8 @@ public class DefaultErrorMessages {
         MAP.put(DATA_CLASS_OVERRIDE_DEFAULT_VALUES_WARNING, "Function ''{0}'' generated for the data class has default values for parameters, and conflicts with member of supertype ''{1}''", NAME, NAME);
         MAP.put(DATA_CLASS_OVERRIDE_DEFAULT_VALUES_ERROR, "Function ''{0}'' generated for the data class has default values for parameters, and conflicts with member of supertype ''{1}''", NAME, NAME);
 
-        MAP.put(CANNOT_OVERRIDE_INVISIBLE_MEMBER, "''{0}'' has no access to ''{1}'', so it cannot override it", FQ_NAMES_IN_TYPES,
-                FQ_NAMES_IN_TYPES);
+        MAP.put(CANNOT_OVERRIDE_INVISIBLE_MEMBER, "''{0}'' has no access to ''{1}'', so it cannot override it", ANNOTATIONS_WHITELIST,
+                ANNOTATIONS_WHITELIST);
         MAP.put(CANNOT_INFER_VISIBILITY, "Cannot infer visibility for ''{0}''. Please specify it explicitly", COMPACT);
 
         MAP.put(ENUM_ENTRY_SHOULD_BE_INITIALIZED, "Enum has no default constructor, use 'entry(parameters)'");
@@ -324,7 +325,7 @@ public class DefaultErrorMessages {
         MAP.put(UNUSED_DESTRUCTURED_PARAMETER_ENTRY, "Destructured parameter ''{0}'' is never used", NAME);
         MAP.put(ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE, "Variable ''{0}'' is assigned but never accessed", NAME);
         MAP.put(VARIABLE_WITH_REDUNDANT_INITIALIZER, "Variable ''{0}'' initializer is redundant", NAME);
-        MAP.put(UNUSED_VALUE, "The value ''{0}'' assigned to ''{1}'' is never used", ELEMENT_TEXT, FQ_NAMES_IN_TYPES);
+        MAP.put(UNUSED_VALUE, "The value ''{0}'' assigned to ''{1}'' is never used", ELEMENT_TEXT, ANNOTATIONS_WHITELIST);
         MAP.put(UNUSED_CHANGED_VALUE, "The value changed at ''{0}'' is never used", ELEMENT_TEXT);
         MAP.put(UNUSED_EXPRESSION, "The expression is unused");
         MAP.put(UNUSED_LAMBDA_EXPRESSION, "The lambda expression is unused. If you mean a block, you can use 'run { ... }'");
@@ -553,7 +554,7 @@ public class DefaultErrorMessages {
 
         MAP.put(MODIFIER_LIST_NOT_ALLOWED, "Modifiers and annotations are not allowed here, because there are other modifiers or annotations outside of parenthesis");
 
-        MAP.put(TOO_MANY_ARGUMENTS, "Too many arguments for {0}", FQ_NAMES_IN_TYPES);
+        MAP.put(TOO_MANY_ARGUMENTS, "Too many arguments for {0}", ANNOTATIONS_WHITELIST);
 
         MAP.put(CONSTANT_EXPECTED_TYPE_MISMATCH, "The {0} literal does not conform to the expected type {1}", STRING, RENDER_TYPE);
         MAP.put(DIVISION_BY_ZERO, "Division by zero");
@@ -761,14 +762,14 @@ public class DefaultErrorMessages {
         MAP.put(CANNOT_CHANGE_ACCESS_PRIVILEGE, "Cannot change access privilege ''{0}'' for ''{1}'' in ''{2}''", VISIBILITY, NAME, NAME);
 
         MAP.put(RETURN_TYPE_MISMATCH_ON_OVERRIDE, "Return type of ''{0}'' is not a subtype of the return type of the overridden member ''{1}''",
-                NAME, FQ_NAMES_IN_TYPES);
+                NAME, ANNOTATIONS_WHITELIST);
         MAP.put(RETURN_TYPE_MISMATCH_ON_INHERITANCE, "''{0}'' clashes with ''{1}'': return types are incompatible",
                 SHORT_NAMES_IN_TYPES, SHORT_NAMES_IN_TYPES);
 
         MAP.put(PROPERTY_TYPE_MISMATCH_ON_OVERRIDE, "Type of ''{0}'' is not a subtype of the overridden property ''{1}''",
-                NAME, FQ_NAMES_IN_TYPES);
+                NAME, ANNOTATIONS_WHITELIST);
         MAP.put(VAR_TYPE_MISMATCH_ON_OVERRIDE, "Type of ''{0}'' doesn''t match the type of the overridden var-property ''{1}''",
-                NAME, FQ_NAMES_IN_TYPES);
+                NAME, ANNOTATIONS_WHITELIST);
         MAP.put(PROPERTY_TYPE_MISMATCH_ON_INHERITANCE, "''{0}'' clashes with ''{1}'': property types are incompatible",
                 SHORT_NAMES_IN_TYPES, SHORT_NAMES_IN_TYPES);
         MAP.put(VAR_TYPE_MISMATCH_ON_INHERITANCE, "''{0}'' clashes with ''{1}'': property types do not match",
@@ -783,20 +784,21 @@ public class DefaultErrorMessages {
         MAP.put(PROPERTY_TYPE_MISMATCH_BY_DELEGATION, "Type of property ''{0}'' is not a subtype of overridden by delegation ''{1}''",
                 SHORT_NAMES_IN_TYPES, SHORT_NAMES_IN_TYPES);
 
-        MAP.put(VAR_OVERRIDDEN_BY_VAL, "Var-property {0} cannot be overridden by val-property {1}", FQ_NAMES_IN_TYPES, FQ_NAMES_IN_TYPES);
+        MAP.put(VAR_OVERRIDDEN_BY_VAL, "Var-property {0} cannot be overridden by val-property {1}", ANNOTATIONS_WHITELIST,
+                ANNOTATIONS_WHITELIST);
 
-        MAP.put(CONFLICTING_INHERITED_MEMBERS, "{0} inherits conflicting members: {1}", NAME, commaSeparated(FQ_NAMES_IN_TYPES));
+        MAP.put(CONFLICTING_INHERITED_MEMBERS, "{0} inherits conflicting members: {1}", NAME, commaSeparated(ANNOTATIONS_WHITELIST));
         MAP.put(ABSTRACT_MEMBER_NOT_IMPLEMENTED, "{0} is not abstract and does not implement abstract member {1}", RENDER_CLASS_OR_OBJECT,
-                FQ_NAMES_IN_TYPES);
+                ANNOTATIONS_WHITELIST);
         MAP.put(ABSTRACT_CLASS_MEMBER_NOT_IMPLEMENTED, "{0} is not abstract and does not implement abstract base class member {1}",
-                RENDER_CLASS_OR_OBJECT, FQ_NAMES_IN_TYPES);
+                RENDER_CLASS_OR_OBJECT, ANNOTATIONS_WHITELIST);
 
         MAP.put(MANY_IMPL_MEMBER_NOT_IMPLEMENTED, "{0} must override {1} because it inherits many implementations of it",
-                RENDER_CLASS_OR_OBJECT, FQ_NAMES_IN_TYPES);
+                RENDER_CLASS_OR_OBJECT, ANNOTATIONS_WHITELIST);
         MAP.put(MANY_INTERFACES_MEMBER_NOT_IMPLEMENTED, "{0} must override {1} because it inherits multiple interface methods of it",
-                RENDER_CLASS_OR_OBJECT, FQ_NAMES_IN_TYPES);
+                RENDER_CLASS_OR_OBJECT, ANNOTATIONS_WHITELIST);
 
-        MAP.put(CONFLICTING_OVERLOADS, "Conflicting overloads: {0}", commaSeparated(FQ_NAMES_IN_TYPES));
+        MAP.put(CONFLICTING_OVERLOADS, "Conflicting overloads: {0}", commaSeparated(ANNOTATIONS_WHITELIST));
 
         MAP.put(FUNCTION_EXPECTED, "Expression ''{0}''{1} cannot be invoked as a function. " +
                                    "The function ''" + OperatorNameConventions.INVOKE.asString() + "()'' is not found",
@@ -912,15 +914,15 @@ public class DefaultErrorMessages {
 
         String multipleDefaultsMessage = "More than one overridden descriptor declares a default value for ''{0}''. " +
                                          "As the compiler can not make sure these values agree, this is not allowed.";
-        MAP.put(MULTIPLE_DEFAULTS_INHERITED_FROM_SUPERTYPES, multipleDefaultsMessage, FQ_NAMES_IN_TYPES);
-        MAP.put(MULTIPLE_DEFAULTS_INHERITED_FROM_SUPERTYPES_WHEN_NO_EXPLICIT_OVERRIDE, multipleDefaultsMessage, FQ_NAMES_IN_TYPES);
+        MAP.put(MULTIPLE_DEFAULTS_INHERITED_FROM_SUPERTYPES, multipleDefaultsMessage, ANNOTATIONS_WHITELIST);
+        MAP.put(MULTIPLE_DEFAULTS_INHERITED_FROM_SUPERTYPES_WHEN_NO_EXPLICIT_OVERRIDE, multipleDefaultsMessage, ANNOTATIONS_WHITELIST);
 
         MAP.put(PARAMETER_NAME_CHANGED_ON_OVERRIDE, "The corresponding parameter in the supertype ''{0}'' is named ''{1}''. " +
                                                     "This may cause problems when calling this function with named arguments.", NAME, NAME);
 
         MAP.put(DIFFERENT_NAMES_FOR_THE_SAME_PARAMETER_IN_SUPERTYPES,
                     "Names of the parameter #{1} conflict in the following members of supertypes: ''{0}''. " +
-                    "This may cause problems when calling this function with named arguments.", commaSeparated(FQ_NAMES_IN_TYPES), TO_STRING);
+                    "This may cause problems when calling this function with named arguments.", commaSeparated(ANNOTATIONS_WHITELIST), TO_STRING);
 
         MAP.put(NAME_FOR_AMBIGUOUS_PARAMETER, "Named argument is not allowed for a parameter with an ambiguous name");
 

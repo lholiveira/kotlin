@@ -657,6 +657,8 @@ object Renderers {
     @JvmField
     val FQ_NAMES_IN_TYPES = DescriptorRenderer.FQ_NAMES_IN_TYPES.asRenderer()
     @JvmField
+    val ANNOTATIONS_WHITELIST = DescriptorRenderer.ANNOTATIONS_WHITELIST.asRenderer()
+    @JvmField
     val COMPACT = DescriptorRenderer.COMPACT.asRenderer()
     @JvmField
     val COMPACT_WITHOUT_SUPERTYPES = DescriptorRenderer.COMPACT_WITHOUT_SUPERTYPES.asRenderer()

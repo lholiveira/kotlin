@@ -1,0 +1,27 @@
+package
+
+public val bar: kotlin.Unit
+@kotlin.SinceKotlin(version = "1.3") @UnimportantAnnotation @UnimportantAnnotationWithArg(arg = "bar") public fun foo(): kotlin.Unit
+public fun testGetOrDefault(/*0*/ c: Map<out kotlin.Number, kotlin.String>): kotlin.Unit
+
+public interface Map</*0*/ K, /*1*/ V> {
+    public open override /*1*/ /*fake_override*/ fun equals(/*0*/ other: kotlin.Any?): kotlin.Boolean
+    @kotlin.SinceKotlin(version = "1.3") @UnimportantAnnotation @UnimportantAnnotationWithArg(arg = "bar") public abstract fun getOrDefault(/*0*/ key: K, /*1*/ defaultValue: V): kotlin.Unit
+    public open override /*1*/ /*fake_override*/ fun hashCode(): kotlin.Int
+    public open override /*1*/ /*fake_override*/ fun toString(): kotlin.String
+}
+
+@kotlin.annotation.Target(allowedTargets = {AnnotationTarget.FUNCTION}) @kotlin.annotation.Retention(value = AnnotationRetention.SOURCE) public final annotation class UnimportantAnnotation : kotlin.Annotation {
+    public constructor UnimportantAnnotation()
+    public open override /*1*/ /*fake_override*/ fun equals(/*0*/ other: kotlin.Any?): kotlin.Boolean
+    public open override /*1*/ /*fake_override*/ fun hashCode(): kotlin.Int
+    public open override /*1*/ /*fake_override*/ fun toString(): kotlin.String
+}
+
+@kotlin.annotation.Target(allowedTargets = {AnnotationTarget.FUNCTION}) @kotlin.annotation.Retention(value = AnnotationRetention.SOURCE) public final annotation class UnimportantAnnotationWithArg : kotlin.Annotation {
+    public constructor UnimportantAnnotationWithArg(/*0*/ arg: kotlin.String)
+    public final val arg: kotlin.String
+    public open override /*1*/ /*fake_override*/ fun equals(/*0*/ other: kotlin.Any?): kotlin.Boolean
+    public open override /*1*/ /*fake_override*/ fun hashCode(): kotlin.Int
+    public open override /*1*/ /*fake_override*/ fun toString(): kotlin.String
+}

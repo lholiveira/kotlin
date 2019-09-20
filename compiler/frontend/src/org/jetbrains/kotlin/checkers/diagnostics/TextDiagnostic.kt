@@ -149,7 +149,7 @@ class TextDiagnostic(
             val diagnosticName = actualDiagnostic.name
 
             if (renderer is AbstractDiagnosticWithParametersRenderer) {
-                val renderParameters = renderer.renderParameters(diagnostic)
+                val renderParameters = renderer.renderParameters(diagnostic, escapeQuotes = true)
                 val parameters = ContainerUtil.map(renderParameters, { it.toString() })
                 return TextDiagnostic(
                     diagnosticName,

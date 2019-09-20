@@ -1071,6 +1071,11 @@ public class FirDiagnosticsSmokeTestGenerated extends AbstractFirDiagnosticsSmok
             runTest("compiler/testData/diagnostics/tests/annotations/RecursivelyIncorrectlyAnnotatedParameter.kt");
         }
 
+        @TestMetadata("renderingInDiagnostics.kt")
+        public void testRenderingInDiagnostics() throws Exception {
+            runTest("compiler/testData/diagnostics/tests/annotations/renderingInDiagnostics.kt");
+        }
+
         @TestMetadata("RetentionsOfAnnotationWithExpressionTarget_after.kt")
         public void testRetentionsOfAnnotationWithExpressionTarget_after() throws Exception {
             runTest("compiler/testData/diagnostics/tests/annotations/RetentionsOfAnnotationWithExpressionTarget_after.kt");
