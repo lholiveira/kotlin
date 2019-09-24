@@ -338,30 +338,30 @@ class JavacWrapper(
 
         }
 
-        val reader = ClassReader.instance(context)
-        val names = Names.instance(context)
-        val outDirName = getLocation(CLASS_OUTPUT)?.firstOrNull()?.path ?: ""
-
-        list(CLASS_OUTPUT, "", setOf(JavaFileObject.Kind.CLASS), true)
-            .forEach { fileObject ->
-                val fqName = fileObject.name
-                    .substringAfter(outDirName)
-                    .substringBefore(".class")
-                    .replace(File.separator, ".")
-                    .let { className ->
-                        if (className.startsWith(".")) className.substring(1) else className
-                    }.let(names::fromString)
-
-                symTab.classes[fqName]?.let {
-                    symTab.classes[fqName] = null
-                }
-                val symbol = reader.enterClass(fqName, fileObject)
-
-                (elements.getPackageOf(symbol) as? Symbol.PackageSymbol)?.let { packageSymbol ->
-                    packageSymbol.members_field?.enter(symbol)
-                    packageSymbol.flags_field = packageSymbol.flags_field or Flags.EXISTS.toLong()
-                }
-            }
+//        val reader = ClassReader.instance(context)
+//        val names = Names.instance(context)
+//        val outDirName = getLocation(CLASS_OUTPUT)?.firstOrNull()?.path ?: ""
+//
+//        list(CLASS_OUTPUT, "", setOf(JavaFileObject.Kind.CLASS), true)
+//            .forEach { fileObject ->
+//                val fqName = fileObject.name
+//                    .substringAfter(outDirName)
+//                    .substringBefore(".class")
+//                    .replace(File.separator, ".")
+//                    .let { className ->
+//                        if (className.startsWith(".")) className.substring(1) else className
+//                    }.let(names::fromString)
+//
+//                symTab.classes[fqName]?.let {
+//                    symTab.classes[fqName] = null
+//                }
+//                val symbol = reader.enterClass(fqName, fileObject)
+//
+//                (elements.getPackageOf(symbol) as? Symbol.PackageSymbol)?.let { packageSymbol ->
+//                    packageSymbol.members_field?.enter(symbol)
+//                    packageSymbol.flags_field = packageSymbol.flags_field or Flags.EXISTS.toLong()
+//                }
+//            }
 
     }
 
