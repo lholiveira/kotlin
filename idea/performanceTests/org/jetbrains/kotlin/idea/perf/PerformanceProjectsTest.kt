@@ -239,7 +239,8 @@ class PerformanceProjectsTest : AbstractPerformanceProjectsTest() {
                     testName = testName,
                     setUp = perfKtsFileAnalysisSetUp(project, fileName),
                     test = perfKtsFileAnalysisTest(),
-                    tearDown = perfKtsFileAnalysisTearDown(extraTimingsNs, project)
+                    tearDown = perfKtsFileAnalysisTearDown(extraTimingsNs, project),
+                    profileEnabled = true
                 )
 
                 extraStats.printWarmUpTimings(

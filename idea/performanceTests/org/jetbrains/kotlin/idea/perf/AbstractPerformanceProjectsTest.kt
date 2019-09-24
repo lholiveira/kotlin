@@ -360,7 +360,8 @@ abstract class AbstractPerformanceProjectsTest : UsefulTestCase() {
                     }
                     commitAllDocuments()
                 }
-            }
+            },
+            profileEnabled = true
         )
     }
 
@@ -442,7 +443,8 @@ abstract class AbstractPerformanceProjectsTest : UsefulTestCase() {
                     pair.second.revertChanges(revertChangesAtTheEnd, pair.first)
                 }
                 commitAllDocuments()
-            }
+            },
+            profileEnabled = true
         )
     }
 
@@ -495,7 +497,8 @@ abstract class AbstractPerformanceProjectsTest : UsefulTestCase() {
                     commitAllDocuments()
                     FileEditorManager.getInstance(project).closeFile(it.setUpValue!!.psiFile.virtualFile)
                     PsiManager.getInstance(project).dropPsiCaches()
-                }
+                },
+                profileEnabled = !isWarmUp
             )
             highlightInfos
         }
