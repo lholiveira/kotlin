@@ -225,7 +225,8 @@ class KotlinCopyPasteReferenceProcessor : CopyPastePostProcessor<KotlinReference
 
         val references = referenceData.map { it to findReference(it, file, blockStart) }
         val bindingContext = try {
-            file.getResolutionFacade().analyze(references.mapNotNull { it.second?.element }, BodyResolveMode.PARTIAL)
+            val elements = references.mapNotNull { it.second?.element }
+            allowResolveInDispatchThread { file.getResolutionFacade().analyze(elements, BodyResolveMode.PARTIAL) }
         } catch (e: Throwable) {
             LOG.error("Failed to analyze references after copy paste", e)
             return emptyList()

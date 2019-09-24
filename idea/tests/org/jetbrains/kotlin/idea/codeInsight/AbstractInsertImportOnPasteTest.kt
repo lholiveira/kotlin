@@ -41,6 +41,7 @@ abstract class AbstractInsertImportOnPasteTest : AbstractCopyPasteTest() {
         val dependencyPsiFile1 = configureByDependencyIfExists(testFileName.replace(".kt", ".dependency.kt"))
         val dependencyPsiFile2 = configureByDependencyIfExists(testFileName.replace(".kt", ".dependency.java"))
         myFixture.configureByFile(testFileName)
+
         myFixture.performEditorAction(cutOrCopy)
 
         if (InTextDirectivesUtils.isDirectiveDefined(testFileText, DELETE_DEPENDENCIES_BEFORE_PASTE_DIRECTIVE)) {

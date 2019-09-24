@@ -8,6 +8,7 @@ package org.jetbrains.kotlin.idea
 import com.intellij.codeInsight.CodeInsightSettings
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.psi.PsiFile
+import org.jetbrains.kotlin.idea.caches.resolve.forceCheckForResolveInDispatchThreadInTests
 import org.jetbrains.kotlin.idea.test.KotlinLightCodeInsightFixtureTestCase
 import org.jetbrains.kotlin.psi.KtFile
 import java.io.File
@@ -45,6 +46,12 @@ abstract class AbstractCopyPasteTest : KotlinLightCodeInsightFixtureTestCase() {
         }
         else {
             return myFixture.configureByText(fileName, DEFAULT_TO_FILE_TEXT) as KtFile
+        }
+    }
+
+    protected fun performActionWithResolveCheck(actionId: String) {
+        forceCheckForResolveInDispatchThreadInTests {
+            myFixture.performEditorAction(actionId)
         }
     }
 }

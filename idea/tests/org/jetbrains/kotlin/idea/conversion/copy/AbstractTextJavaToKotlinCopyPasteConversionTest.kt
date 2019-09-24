@@ -6,7 +6,6 @@
 package org.jetbrains.kotlin.idea.conversion.copy
 
 import com.intellij.openapi.actionSystem.IdeActions
-import org.jetbrains.kotlin.idea.AbstractCopyPasteTest
 import org.jetbrains.kotlin.idea.editor.KotlinEditorOptions
 import org.jetbrains.kotlin.idea.test.KotlinWithJdkAndRuntimeLightProjectDescriptor
 import org.jetbrains.kotlin.idea.test.PluginTestCaseBase
@@ -44,7 +43,7 @@ abstract class AbstractTextJavaToKotlinCopyPasteConversionTest : AbstractJ2kCopy
         val noConversionExpected = InTextDirectivesUtils.findListWithPrefixes(fileText, "// NO_CONVERSION_EXPECTED").isNotEmpty()
 
         myFixture.editor.selectionModel.setSelection(0, fileText.length)
-        myFixture.performEditorAction(IdeActions.ACTION_COPY)
+        performActionWithResolveCheck(IdeActions.ACTION_COPY)
 
         configureByDependencyIfExists(testName + ".dependency.kt")
         configureByDependencyIfExists(testName + ".dependency.java")
@@ -53,7 +52,7 @@ abstract class AbstractTextJavaToKotlinCopyPasteConversionTest : AbstractJ2kCopy
 
         ConvertTextJavaCopyPasteProcessor.conversionPerformed = false
 
-        myFixture.performEditorAction(IdeActions.ACTION_PASTE)
+        performActionWithResolveCheck(IdeActions.ACTION_PASTE)
 
         kotlin.test.assertEquals(noConversionExpected, !ConvertTextJavaCopyPasteProcessor.conversionPerformed,
                                  if (noConversionExpected) "Conversion to Kotlin should not be suggested" else "No conversion to Kotlin suggested")

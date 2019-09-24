@@ -26,11 +26,12 @@ abstract class AbstractLiteralKotlinToKotlinCopyPasteTest : AbstractCopyPasteTes
         val testName = getTestName(false)
         myFixture.configureByFiles(testName + ".kt")
 
-        myFixture.performEditorAction(IdeActions.ACTION_COPY)
+        performActionWithResolveCheck(IdeActions.ACTION_COPY)
 
         configureTargetFile(testName + ".to.kt")
 
-        myFixture.performEditorAction(IdeActions.ACTION_PASTE)
+        performActionWithResolveCheck(IdeActions.ACTION_PASTE)
+
         KotlinTestUtils.assertEqualsToFile(File(path.replace(".kt", ".expected.kt")), myFixture.file.text)
     }
 }
