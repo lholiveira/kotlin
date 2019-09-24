@@ -19,7 +19,11 @@ import kotlin.test.assertEquals
 
 typealias StatInfos = Map<String, Any>?
 
-class Stats(val name: String = "", val header: Array<String> = arrayOf("Name", "ValueMS", "StdDev")) : Closeable {
+class Stats(
+    val name: String = "",
+    val header: Array<String> = arrayOf("Name", "ValueMS", "StdDev"),
+    val acceptanceStabilityLevel: Int = 15
+) : Closeable {
 
     private val perfTestRawDataMs = mutableListOf<Long>()
 
@@ -63,7 +67,7 @@ class Stats(val name: String = "", val header: Array<String> = arrayOf("Name", "
             .fold(mutableSetOf<String>(), { acc, keys -> acc.addAll(keys); acc })
             .filter { it != TEST_KEY && it != ERROR_KEY }
             .sorted().forEach { perfCounterName ->
-                val values = statInfosArray.map { (it?.get(perfCounterName) as Long) }.toLongArray()
+                val values = statInfosArray.map { (it?.get(perfCounterName) as? Long) ?: 0L }.toLongArray()
                 val statInfoMean = calcMean(values)
 
                 val n = "$id : $perfCounterName"
@@ -210,7 +214,7 @@ class Stats(val name: String = "", val header: Array<String> = arrayOf("Name", "
             val calcMean = calcMean(statInfosArray)
             val stabilityPercentage = round(calcMean.stdDev * 100.0 / calcMean.mean).toInt()
             logMessage { "${phaseData.testName} stability is $stabilityPercentage %" }
-            check(stabilityPercentage <= 10) { "${phaseData.testName} is not stable: stability above $stabilityPercentage %" }
+            //check(stabilityPercentage <= acceptanceStabilityLevel) { "${phaseData.testName} is not stable: stability above $stabilityPercentage %" }
         }
 
         return statInfosArray

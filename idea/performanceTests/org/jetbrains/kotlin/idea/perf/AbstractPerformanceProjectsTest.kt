@@ -13,6 +13,7 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.ide.highlighter.ModuleFileType
 import com.intellij.ide.startup.impl.StartupManagerImpl
 import com.intellij.idea.IdeaTestApplication
+import com.intellij.openapi.actionSystem.IdeActions
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.editor.EditorFactory
@@ -112,9 +113,9 @@ abstract class AbstractPerformanceProjectsTest : UsefulTestCase() {
             ThrowableRunnable {
                 if (myProject != null) {
                     DaemonCodeAnalyzerSettings.getInstance().isImportHintEnabled = true // return default value to avoid unnecessary save
-                    (StartupManager.getInstance(myProject!!) as StartupManagerImpl).checkCleared()
-                    (DaemonCodeAnalyzer.getInstance(myProject!!) as DaemonCodeAnalyzerImpl).cleanupAfterTest()
-                    closeProject(myProject!!)
+                    (StartupManager.getInstance(project()) as StartupManagerImpl).checkCleared()
+                    (DaemonCodeAnalyzer.getInstance(project()) as DaemonCodeAnalyzerImpl).cleanupAfterTest()
+                    closeProject(project())
                     myProject = null
                 }
             }).run()
@@ -253,6 +254,8 @@ abstract class AbstractPerformanceProjectsTest : UsefulTestCase() {
             dispatchAllInvocationEvents()
 
             Fixture.enableAnnotatorsAndLoadDefinitions(project)
+
+            myApplication.setDataProvider(TestDataProvider(project))
         }
 
         return lastProject ?: error("unable to open project $name at $path")
@@ -265,7 +268,6 @@ abstract class AbstractPerformanceProjectsTest : UsefulTestCase() {
 
         refreshGradleProject(projectPath, project)
 
-        //ExternalProjectsManagerImpl.getInstance(project).setStoreExternally(false)
         dispatchAllInvocationEvents()
 
         // WARNING: [VD] DO NOT SAVE PROJECT AS IT COULD PERSIST WRONG MODULES INFO
@@ -286,7 +288,7 @@ abstract class AbstractPerformanceProjectsTest : UsefulTestCase() {
         revertChangesAtTheEnd: Boolean = true,
         note: String = ""
     ) = perfTypeAndAutocomplete(
-        myProject!!, stats, fileName, marker, insertString, surroundItems,
+        project(), stats, fileName, marker, insertString, surroundItems,
         lookupElements = lookupElements, typeAfterMarker = typeAfterMarker,
         revertChangesAtTheEnd = revertChangesAtTheEnd, note = note
     )
@@ -313,11 +315,7 @@ abstract class AbstractPerformanceProjectsTest : UsefulTestCase() {
                 val editor = fixture.editor
 
                 val initialText = editor.document.text
-                if (isAKotlinScriptFile(fileName)) {
-                    runAndMeasure("update script dependencies for $fileName") {
-                        ScriptConfigurationManager.updateScriptDependenciesSynchronously(fixture.psiFile, project)
-                    }
-                }
+                updateScriptDependenciesIfNeeded(fileName, fixture, project)
 
                 val tasksIdx = editor.document.text.indexOf(marker)
                 assertTrue("marker '$marker' not found in $fileName", tasksIdx > 0)
@@ -375,7 +373,7 @@ abstract class AbstractPerformanceProjectsTest : UsefulTestCase() {
         revertChangesAtTheEnd: Boolean = true,
         note: String = ""
     ) = perfTypeAndHighlight(
-        myProject!!, stats, fileName, marker, insertString, surroundItems,
+        project(), stats, fileName, marker, insertString, surroundItems,
         typeAfterMarker = typeAfterMarker,
         revertChangesAtTheEnd = revertChangesAtTheEnd, note = note
     )
@@ -400,11 +398,7 @@ abstract class AbstractPerformanceProjectsTest : UsefulTestCase() {
                 val editor = fixture.editor
 
                 val initialText = editor.document.text
-                if (isAKotlinScriptFile(fileName)) {
-                    runAndMeasure("update script dependencies for $fileName") {
-                        ScriptConfigurationManager.updateScriptDependenciesSynchronously(fixture.psiFile, project)
-                    }
-                }
+                updateScriptDependenciesIfNeeded(fileName, fixture, project)
 
                 val tasksIdx = editor.document.text.indexOf(marker)
                 assertTrue("marker '$marker' not found in $fileName", tasksIdx > 0)
@@ -448,6 +442,85 @@ abstract class AbstractPerformanceProjectsTest : UsefulTestCase() {
         )
     }
 
+    fun perfCopyAndPaste(
+        stats: Stats,
+        sourceFileName: String,
+        sourceInitialMarker: String? = null,
+        sourceFinalMarker: String? = null,
+        targetFileName: String,
+        targetInitialMarker: String? = null,
+        targetFinalMarker: String? = null,
+        note: String = ""
+    ) = perfCopyAndPaste(
+        project(), stats,
+        sourceFileName, sourceInitialMarker, sourceFinalMarker,
+        targetFileName, targetInitialMarker, targetFinalMarker,
+        note
+    )
+
+    fun perfCopyAndPaste(
+        project: Project,
+        stats: Stats,
+        sourceFileName: String,
+        sourceInitialMarker: String? = null,
+        sourceFinalMarker: String? = null,
+        targetFileName: String,
+        targetInitialMarker: String? = null,
+        targetFinalMarker: String? = null,
+        note: String = ""
+    ) {
+        stats.perfTest<Pair<Fixture, Fixture>, Boolean>(
+            warmUpIterations = 8,
+            iterations = 15,
+            testName = "copy-paste ${notePrefix(note)}$sourceFileName",
+            setUp = {
+                val fixture1 = openFixture(project, sourceFileName)
+                val fixture2 = openFixture(project, targetFileName)
+
+                updateScriptDependenciesIfNeeded(sourceFileName, fixture1, project)
+                updateScriptDependenciesIfNeeded(sourceFileName, fixture2, project)
+
+                fixture1.selectMarkers(sourceInitialMarker, sourceFinalMarker)
+                fixture2.selectMarkers(targetInitialMarker, targetFinalMarker)
+
+                it.setUpValue = Pair(fixture1, fixture2)
+            },
+            test = {
+                it.setUpValue?.let { setUpValue ->
+                    val fixture1 = setUpValue.first
+                    val fixture2 = setUpValue.second
+                    it.value = fixture1.performEditorAction(IdeActions.ACTION_COPY) &&
+                            fixture2.performEditorAction(IdeActions.ACTION_PASTE)
+                }
+            },
+            tearDown = {
+                commitAllDocuments()
+                it.value?.let { performed ->
+                    assertTrue(performed)
+                    // files could be different due to spaces
+                    //assertEquals(it.setUpValue!!.first.document.text, it.setUpValue!!.second.document.text)
+                }
+                it.setUpValue?.let { pair ->
+                    pair.second.performEditorAction(IdeActions.ACTION_UNDO)
+                }
+                commitAllDocuments()
+            },
+            profileEnabled = true
+        )
+    }
+
+    private fun updateScriptDependenciesIfNeeded(
+        fileName: String,
+        fixture: Fixture,
+        project: Project
+    ) {
+        if (isAKotlinScriptFile(fileName)) {
+            runAndMeasure("update script dependencies for $fileName") {
+                ScriptConfigurationManager.updateScriptDependenciesSynchronously(fixture.psiFile, project)
+            }
+        }
+    }
+
     private fun initKotlinProject(
         project: Project,
         projectPath: String,
@@ -470,7 +543,7 @@ abstract class AbstractPerformanceProjectsTest : UsefulTestCase() {
     }
 
     protected fun perfHighlightFile(name: String, stats: Stats): List<HighlightInfo> =
-        perfHighlightFile(myProject!!, name, stats)
+        perfHighlightFile(project(), name, stats)
 
     protected fun perfHighlightFile(
         project: Project,
@@ -520,7 +593,9 @@ abstract class AbstractPerformanceProjectsTest : UsefulTestCase() {
     }
 
     protected fun perfScriptDependencies(name: String, stats: Stats, note: String = "") =
-        perfScriptDependencies(myProject!!, name, stats, note = note)
+        perfScriptDependencies(project(), name, stats, note = note)
+
+    private fun project() = myProject ?: error("project has not been initialized")
 
     private fun perfScriptDependencies(
         project: Project,

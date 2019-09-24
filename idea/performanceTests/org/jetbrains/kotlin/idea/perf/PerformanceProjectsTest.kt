@@ -54,7 +54,7 @@ class PerformanceProjectsTest : AbstractPerformanceProjectsTest() {
         super.setUp()
         // warm up: open simple small project
         if (!warmedUp) {
-            warmUpProject(hwStats)
+            //warmUpProject(hwStats)
 
             warmedUp = true
         }
@@ -97,6 +97,21 @@ class PerformanceProjectsTest : AbstractPerformanceProjectsTest() {
                     "val q = import",
                     typeAfterMarker = false,
                     note = "out-of-method import"
+                )
+            }
+        }
+    }
+
+    fun testKotlinProjectCopyAndPaste() {
+        tcSuite("Kotlin copy-and-paste") {
+            val stats = Stats("Kotlin copy-and-paste")
+            stats.use { stat ->
+                perfOpenKotlinProjectFast(stat)
+
+                perfCopyAndPaste(
+                    stat,
+                    sourceFileName = "compiler/psi/src/org/jetbrains/kotlin/psi/KtFile.kt",
+                    targetFileName = "compiler/psi/src/org/jetbrains/kotlin/psi/KtImportInfo.kt"
                 )
             }
         }

@@ -22,6 +22,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.roots.FileIndexFacade
@@ -48,7 +49,7 @@ import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 
 
 class Fixture(val project: Project, val editor: Editor, val psiFile: PsiFile, val vFile: VirtualFile = psiFile.virtualFile) {
-    private val delegate = EditorTestFixture(project, editor, vFile)
+    private var delegate = EditorTestFixture(project, editor, vFile)
 
     val document: Document
         get() = editor.document
@@ -57,6 +58,11 @@ class Fixture(val project: Project, val editor: Editor, val psiFile: PsiFile, va
 
     fun type(s: String) {
         delegate.type(s)
+    }
+
+    fun performEditorAction(actionId: String): Boolean {
+        selectEditor()
+        return delegate.performEditorAction(actionId)
     }
 
     fun complete(type: CompletionType = CompletionType.BASIC, invocationCount: Int = 1): Array<LookupElement> =
@@ -77,6 +83,20 @@ class Fixture(val project: Project, val editor: Editor, val psiFile: PsiFile, va
         } finally {
             cleanupCaches(project, vFile)
         }
+    }
+
+    fun selectMarkers(initialMarker: String?, finalMarker: String?) {
+        selectEditor()
+        val text = editor.document.text
+        editor.selectionModel.setSelection(
+            initialMarker?.let { marker -> text.indexOf(marker) } ?: 0,
+            finalMarker?.let { marker -> text.indexOf(marker) } ?: text.length)
+    }
+
+    private fun selectEditor() {
+        val fileEditorManagerEx = FileEditorManagerEx.getInstanceEx(project)
+        fileEditorManagerEx.openFile(vFile, true)
+        check(fileEditorManagerEx.selectedEditor?.file == vFile) { "unable to open $vFile" }
     }
 
     companion object {
@@ -120,7 +140,8 @@ class Fixture(val project: Project, val editor: Editor, val psiFile: PsiFile, va
         fun openFixture(project: Project, fileName: String): Fixture {
             val fileInEditor = openFileInEditor(project, fileName)
             val file = fileInEditor.psiFile
-            val editor = EditorFactory.getInstance().getEditors(fileInEditor.document, project)[0]
+            val editorFactory = EditorFactory.getInstance()
+            val editor = editorFactory.getEditors(fileInEditor.document, project)[0]
 
             return Fixture(project, editor, file)
         }
@@ -168,7 +189,7 @@ class Fixture(val project: Project, val editor: Editor, val psiFile: PsiFile, va
             runInEdtAndWait {
                 fileEditorManager.openFile(vFile, true)
             }
-            val document = fileDocumentManager.getDocument(vFile)!!
+            val document = fileDocumentManager.getDocument(vFile) ?: error("no document for $vFile found")
 
             UsefulTestCase.assertNotNull("doc not found for $vFile", EditorFactory.getInstance().getEditors(document))
             UsefulTestCase.assertTrue("expected non empty doc", document.text.isNotEmpty())
